@@ -1,0 +1,23 @@
+---
+- hosts: VM2
+  remote_user: cc
+  collections:
+    - openstack.cloud
+  become: yes
+
+  tasks: 
+  - name: Update bind address to 0.0.0.0
+    ansible.builtin.lineinfile:
+      path: /opt/couchdb/etc/default.d/10-bind-address.ini
+      regexp: 'bind_address = 127.0.0.1'
+      line: 'bind_address = 0.0.0.0'
+
+  - name: Add chttpd_auth configuration
+    ansible.builtin.blockinfile:
+      path: /opt/couchdb/etc/local.d/10-admins.ini
+      block: |
+        [chttpd_auth]
+        secret = 32538a247759c453fc6b53bb6a8cfd39
+
+  - name: Start CouchDB using a shell command
+    ansible.builtin.shell: /etc/init.d/couchdb start

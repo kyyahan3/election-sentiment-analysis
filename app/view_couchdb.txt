@@ -1,0 +1,25 @@
+// http://129.114.26.101:5984/_utils/#database/politics/_design/election_analysis
+
+{
+  "_id": "_design/election_analysis",
+  "_rev": "21-494fae81601fa906f835357b1e938d45",
+  "views": {
+    "count-by-party-and-type": {
+      "reduce": "_count",
+      "map": "function (doc) {\n    if (doc.party && doc.type) {\n        emit([doc.party, doc.type], 1);\n    }\n}\n"
+    },
+    "count-user-by-party": {
+      "reduce": "_count",
+      "map": "function(doc) {\n  if (doc.type === \"raw_data\" && doc.party && doc.comment_author && doc.post_author) {\n    emit([doc.comment_author, doc.party], 1);\n    if (doc.comment_author !== doc.post_author) {\n      emit([doc.post_author, doc.party], 1);\n    }\n  }\n}\n"
+    },
+    "emotion-sum-score": {
+      "reduce": "function(keys, values, rereduce) {\n  var result = {\n    joy: 0,\n    optimism: 0,\n    anger: 0,\n    sadness: 0,\n    count: 0\n  };\n\n  values.forEach(function(value) {\n    if (rereduce) {\n      // In case of rereduce, values are the results of previous reduces\n      result.joy += value.joy;\n      result.optimism += value.optimism;\n      result.anger += value.anger;\n      result.sadness += value.sadness;\n      result.count += value.count;\n    } else {\n      // Directly sum up the values without averaging\n      result.joy += value[0];\n      result.optimism += value[1];\n      result.anger += value[2];\n      result.sadness += value[3];\n      result.count += value[4];\n    }\n  });\n\n  // No division is performed, as we're just summing the scores\n\n  return result;\n}\n",
+      "map": "function(doc) {\n  if (doc.type === \"emotion_data\") {\n    emit(doc.party, [doc.probability.joy, doc.probability.optimism, doc.probability.anger, doc.probability.sadness, 1]);\n  }\n}\n"
+    },
+    "sentiment-agg-by-30m": {
+      "reduce": "function (keys, values, rereduce) {\n    // Initialize result object with sub-structures for each party\n    var result = {\n        'democrat': {\n            'negative': { sum: 0, count: 0 },\n            'neutral': { sum: 0, count: 0 },\n            'positive': { sum: 0, count: 0 }\n        },\n        'republican': {\n            'negative': { sum: 0, count: 0 },\n            'neutral': { sum: 0, count: 0 },\n            'positive': { sum: 0, count: 0 }\n        }\n    };\n\n    if (rereduce) {\n        // Handle re-reduction: summing up the previously reduced results\n        values.forEach(function (partial) {\n            for (var party in partial) {\n                result[party].negative.sum += partial[party].negative.sum;\n                result[party].negative.count += partial[party].negative.count;\n                result[party].neutral.sum += partial[party].neutral.sum;\n                result[party].neutral.count += partial[party].neutral.count;\n                result[party].positive.sum += partial[party].positive.sum;\n                result[party].positive.count += partial[party].positive.count;\n            }\n        });\n    } else {\n        // Handle initial reduction: summing up raw values from the map function\n        values.forEach(function (value) {\n            var party = value.party; // Assuming each value includes 'party' key\n            result[party].negative.sum += value.negative.sum;\n            result[party].negative.count += value.negative.count;\n            result[party].neutral.sum += value.neutral.sum;\n            result[party].neutral.count += value.neutral.count;\n            result[party].positive.sum += value.positive.sum;\n            result[party].positive.count += value.positive.count;\n        });\n    }\n\n    return result;\n}\n",
+      "map": "function (doc) {\n  if (doc.type === \"sentiment_data\" && doc.timestamp && doc.party && doc.probability) {\n    var date = new Date(doc.timestamp);\n    var year = date.getUTCFullYear();\n    var month = date.getUTCMonth() + 1; // JavaScript months are zero-indexed.\n    var day = date.getUTCDate();\n    var hour = date.getUTCHours();\n    var minutes = date.getUTCMinutes();\n    var tenMinuteBlock = Math.floor(minutes / 30) * 30; // Round down to the nearest 10 minutes\n\n    emit([year, month, day, hour, tenMinuteBlock], {\n      party: doc.party, // Include party identifier in the emitted value\n      negative: { sum: doc.probability.negative, count: 1 },\n      neutral: { sum: doc.probability.neutral, count: 1 },\n      positive: { sum: doc.probability.positive, count: 1 }\n    });\n  }\n}\n"
+    }
+  },
+  "language": "javascript"
+}

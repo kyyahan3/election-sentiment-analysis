@@ -1,0 +1,14 @@
+# Authorship: Bryan
+---
+- hosts: VM2 
+  remote_user:  cc  
+  collections: 
+    - openstack.cloud
+  become: yes
+
+  tasks:
+  - name: Copy consumer_tweetnlp.py to VM2
+    copy:
+        src: consumer_tweetnlp.py 
+        dest: /home/cc/kafka 
+...

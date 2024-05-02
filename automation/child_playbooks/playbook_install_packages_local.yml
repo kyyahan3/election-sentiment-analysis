@@ -1,0 +1,19 @@
+# Authorship: Bryan
+---
+- name: Install local VM packages
+  hosts: MyLocalVMs
+
+  tasks:
+  - name: Install python3
+    apt: name=python3 state=latest
+    become: yes
+
+  - name: Install gcc
+    apt: name=gcc state=latest
+    become: yes
+
+  - name: Install kafka-python using pip
+    pip:
+      name: kafka-python
+    become: yes
+...

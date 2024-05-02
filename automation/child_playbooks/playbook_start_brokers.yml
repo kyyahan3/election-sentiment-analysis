@@ -1,0 +1,30 @@
+# Authorship: Bryan
+---
+- hosts: MyChamVMs
+  remote_user: cc
+  collections:
+    - openstack.cloud
+
+  tasks: 
+  # - name: "Start broker(s) on cloud VM(s)"
+  #   command: ~/kafka/bin/kafka-server-start.sh ~/kafka/config/server.properties
+  # - name: Start Kafka server
+  #   shell: /home/cc/kafka/bin/kafka-server-start.sh /home/cc/kafka/config/server.properties
+  #   async: 300
+  #   poll: 0
+  - name: Start broker(s) on cloud VM(s)
+    ansible.builtin.shell: | 
+      nohup /home/cc/kafka/bin/kafka-server-start.sh /home/cc/kafka/config/server.properties > broker.log 2>&1 &
+    args:
+      creates: broker.log
+    become: true
+
+  # # netstat -tuln | grep 9092
+  # - name: Execute netstat command
+  #   command: netstat -tuln | grep 9092
+  #   register: netstat_output
+
+  #   - name: Display netstat output
+  #     debug:
+  #       msg: "{{ netstat_output.stdout_lines }}"
+...

@@ -1,0 +1,87 @@
+# Authorship: Bryan
+---
+- hosts: VM2  # machines on whom the action is performed
+  vars:
+    apt_env:
+      DEBIAN_FRONTEND: noninteractive
+  remote_user: cc    # change username depending on what it is on the cloud
+  collections:   # this is new starting with Ansible 2.9 (akin to importing package)
+    - openstack.cloud
+  become: yes
+
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisites
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg
+        - lsb-release
+
+    - name: Install CouchDB Archive Keyring
+      become: true
+      shell: curl https://couchdb.apache.org/repo/keys.asc | gpg --dearmor | tee /usr/share/keyrings/couchdb-archive-keyring.gpg >/dev/null 2>&1
+
+    - name: Get OS release information
+      become: yes
+      shell: grep VERSION_CODENAME /etc/os-release | cut -d '=' -f2
+      register: os_release
+
+    - name: Add CouchDB repository
+      become: yes
+      command: echo "deb [signed-by=/usr/share/keyrings/couchdb-archive-keyring.gpg] https://apache.jfrog.io/artifactory/couchdb-deb/ {{ os_release.stdout }} main" | sudo tee /etc/apt/sources.list.d/couchdb.list >/dev/null
+
+    - name: update apt to ensure sources are present
+      environment: "{{ apt_env }}"
+      apt:
+        update-cache: true
+
+    - name: debconf mode
+      ansible.builtin.debconf:
+        name: couchdb
+        question: couchdb/mode
+        value: standalone
+        vtype: select
+
+    - name: debconf bindaddresss
+      ansible.builtin.debconf:
+        name: couchdb
+        question: couchdb/bindaddress
+        value: '0.0.0.0'
+        vtype: string
+
+    - name: debconf adminpass
+      ansible.builtin.debconf:
+        name: couchdb
+        question: couchdb/adminpass
+        value: "pass"
+        vtype: password
+
+    - name: debconf cookie
+      ansible.builtin.debconf:
+        name: couchdb
+        question: couchdb/cookie
+        value: 1234
+        vtype: string
+
+    - name: adminpass again
+      ansible.builtin.debconf:
+        name: couchdb
+        question: couchdb/adminpass_again
+        value: "pass"
+        vtype: password
+
+    - name: ensure couchdb is at the latest version, bypass interactive install
+      environment: "{{ apt_env }}"
+      apt: name=couchdb state=latest
+
+    - name: Create database on remote
+      shell: curl -X PUT "http://localhost:5984/election-sentiment" -u 'admin:pass'
+...

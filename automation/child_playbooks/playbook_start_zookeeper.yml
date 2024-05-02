@@ -1,0 +1,27 @@
+# Authorship: Bryan
+---
+- hosts: VM1
+  remote_user: cc
+  collections:
+    - openstack.cloud
+
+  tasks: 
+  - name: Start Zookeeper in the background
+    ansible.builtin.shell: | 
+      nohup /home/cc/kafka/bin/zookeeper-server-start.sh /home/cc/kafka/config/zookeeper.properties > zookeeper.log 2>&1 &
+    args:
+      creates: zookeeper.log
+    become: true
+    become_method: sudo
+  
+  # - name: Start Zookeeper in the background
+  #   command: ~/kafka/bin/zookeeper-server-start.sh ~/kafka/config/zookeeper.properties
+  #   become: true
+  #   become_method: sudo
+
+  # - name: Start Kafka Zookeeper in the background
+  #   shell: sudo /home/cc/kafka/bin/zookeeper-server-start.sh /home/cc/kafka/config/zookeeper.properties
+  #   async: 300
+  #   poll: 0
+  
+...

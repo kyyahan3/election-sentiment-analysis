@@ -1,0 +1,95 @@
+# Authorship: Bryan
+---
+- hosts: MyChamVMs  # machines on whom the action is performed
+  remote_user: cc    # change username depending on what it is on the cloud
+  collections:   # this is new starting with Ansible 2.9 (akin to importing package)
+    - openstack.cloud
+  become: yes
+
+  tasks:
+  # - name: Install subversion
+  #   apt: name=subversion state=latest
+  #   become: yes
+
+  - name: Install pip
+    apt: name=pip state=latest
+    become: yes
+
+  - name: Install python3
+    apt: name=python3 state=latest
+    become: yes
+
+  - name: Install kafka-python using pip
+    pip:
+      name: kafka-python
+    become: yes
+
+  - name: Install Java
+    apt: name=default-jre state=latest
+    become: yes
+
+  - name: Install OpenStack SDK
+    pip:
+      name: openstacksdk
+      state: present
+    become: yes
+    
+  - name: Make downloads directory
+    command: mkdir -p /home/cc/Downloads
+
+  - name: Download kafka
+    command: curl -Lf "https://dlcdn.apache.org/kafka/3.6.2/kafka_2.13-3.6.2.tgz" -o /home/cc/Downloads/kafka.tgz
+
+  - name: Make kafka directory
+    command: mkdir -p /home/cc/kafka
+
+  - name: Install kafka
+    command: tar -xvzf /home/cc/Downloads/kafka.tgz -C /home/cc/kafka --strip 1
+
+  - name: Install UFW (Uncomplicated Firewall) package
+    apt: name=ufw state=latest
+    become: yes
+
+  - name: Limit TCP access to port 2181 with comment "ZooKeeper"
+    ufw:
+      rule: limit
+      proto: tcp
+      port: 2181
+      comment: ZooKeeper
+    become: yes
+
+  - name: Limit TCP access to port 9092 with comment "Kafka"
+    ufw:
+      rule: limit
+      proto: tcp
+      port: 9092
+      comment: Kafka
+    become: yes
+    
+  
+  - name: Limit TCP access to port 5984 with comment "CouchDB"
+    ufw:
+      rule: limit
+      proto: tcp
+      port: 5984
+      comment: CouchDB
+    become: yes
+
+  - name: Add port 9092/tcp to firewall rules
+    command: firewall-cmd --permanent --add-port=9092/tcp
+    become: yes
+
+  - name: Add port 2181/tcp to firewall rules
+    command: firewall-cmd --permanent --add-port=2181/tcp
+    become: yes
+
+  - name: Reload firewall rules
+    command: firewall-cmd --reload
+    become: yes
+
+  ############################################
+  # Install Couchdb
+  ############################################
+
+
+...

@@ -1,0 +1,14 @@
+# Authorship: Bryan
+---
+- hosts: VM2
+  remote_user: cc
+  collections:
+    - openstack.cloud
+
+  tasks:
+  - name: Create topic - democrat
+    command: ~/kafka/bin/kafka-topics.sh --create --topic democrat --bootstrap-server 129.114.27.159:9092
+
+  - name: Create topic - republican
+    command: ~/kafka/bin/kafka-topics.sh --create --topic republican --bootstrap-server 129.114.27.159:9092
+...

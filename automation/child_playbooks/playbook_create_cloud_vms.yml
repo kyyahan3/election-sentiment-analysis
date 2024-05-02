@@ -1,0 +1,53 @@
+# Authorship: Bryan (90) Yahan (10)
+---
+- name: Create
+  hosts: MyLocalVMs
+
+  collections: 
+  - openstack.clouds
+
+  tasks:
+  - name: VM_1
+    openstack.cloud.server:
+     state: present
+     name: "group4-Project-VM1"
+     auth:
+      auth_url: https://kvm.tacc.chameleoncloud.org:5000/v3
+      username: "cvetana@vanderbilt.edu"
+      password: "simple"
+      project_name: "CHI-221026"
+     image: "CC-Ubuntu20.04"
+     key_name: group-4
+     floating_ips:
+        - "129.114.26.50"
+     timeout: 300
+     flavor: "m1.medium"
+     availability_zone: "nova"
+     security_groups: ["default", "ENABLE_PING_SSH", "ENABLE_KAFKA", "ENABLE_5984_COUCHDB", "ENABLE_OTHERS"] # "kafka_ports", 
+     nics:
+     - net-name: sharednet1
+
+  - name: VM_2
+    openstack.cloud.server:
+     state: present
+     name: "group4-Project-VM2"
+     auth:
+      auth_url: https://kvm.tacc.chameleoncloud.org:5000/v3
+      username: "cvetana@vanderbilt.edu"
+      password: "simple"
+      project_name: "CHI-221026"
+     image: "CC-Ubuntu20.04"
+     key_name: group-4
+     floating_ips:
+        - "129.114.26.101"
+     timeout: 300
+     flavor: "m1.medium"
+     availability_zone: "nova"
+     security_groups: ["default", "ENABLE_PING_SSH", "ENABLE_KAFKA", "ENABLE_5984_COUCHDB", "ENABLE_OTHERS"] #  "kafka_ports", 
+     nics:
+     - net-name: sharednet1
+
+  - name: Pause for 45 seconds
+    pause:
+      seconds: 45
+...

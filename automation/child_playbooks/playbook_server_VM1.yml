@@ -1,0 +1,65 @@
+# Authorship: Bryan (50) Yahan (50)
+---
+- name: Using the new Openstack Cloud collection
+  hosts: MyLocalVMs  # remember, the requestor is the local machine
+  collections:   # this is new starting with Ansible 2.9 (akin to importing package)
+    - openstack.cloud
+  tasks:
+
+  - name: Obtain info about specific servers on the Chameleon
+    openstack.cloud.server_info:
+        cloud: chameleon   # this is the nickname from our clouds.yaml file
+        server: "group4-Project-VM1"     # set this whatever you are interested in
+    register: result            # this is a way to store output in a variable
+
+  - name: Set a fact
+    set_fact:
+      example_variable: "{{ result.servers[0].addresses.sharednet1[0].addr }}"
+
+
+- name: Update Kafka for VM1 server.properties
+  hosts: VM1
+  remote_user: cc
+  become: yes
+  collections:
+    - openstack.cloud
+  tasks:
+
+    - name: Update broker.id to 0
+      ansible.builtin.lineinfile:
+        path: /home/cc/kafka/config/server.properties
+        regexp: '^#?broker.id='
+        line: 'broker.id=0'
+
+    - name: Update Zookeeper connect configuration
+      ansible.builtin.lineinfile:
+        path: /home/cc/kafka/config/server.properties
+        regexp: '^#?zookeeper.connect='
+        line: "zookeeper.connect=localhost:2181,{{ hostvars[groups['MyLocalVMs'][0]]['example_variable'] }}:2181,129.114.26.50:2181"
+        state: present
+
+    - name: Update transaction state log replication factor
+      ansible.builtin.lineinfile:
+        path: /home/cc/kafka/config/server.properties
+        regexp: '^#?transaction.state.log.replication.factor='
+        line: 'transaction.state.log.replication.factor=2'
+        state: present
+
+    - name: Set advertised.listeners configuration
+      ansible.builtin.lineinfile:
+        path: /home/cc/kafka/config/server.properties
+        regexp: '^#?advertised.listeners='
+        line: 'advertised.listeners=PLAINTEXT://129.114.26.50:9092'
+        state: present
+    
+    - name: Un-comment and set listener security protocol map
+      ansible.builtin.lineinfile:
+        path: /home/cc/kafka/config/server.properties
+        regexp: '^#?listener.security.protocol.map='
+        line: 'listener.security.protocol.map=PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL'
+        state: present
+  handlers:
+    - name: restart kafka
+      service:
+        name: kafka
+        state: restarted

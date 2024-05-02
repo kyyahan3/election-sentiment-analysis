@@ -1,0 +1,50 @@
+# Authorship: Bryan
+---
+- name: Master Playbook
+  hosts: MyLocalVMs
+  
+- name: Install local VM packages 
+  import_playbook: child_playbooks/playbook_install_packages_local.yml
+
+# - name: Create cloud VMs
+#   import_playbook: child_playbooks/playbook_create_cloud_vms.yml
+
+# - name: Install packages on cloud
+#   import_playbook: child_playbooks/playbook_install_packages_cloud.yml
+
+- name: Set server properties VM1
+  import_playbook: child_playbooks/playbook_server_VM1.yml
+
+- name: Set server properties VM2
+  import_playbook: child_playbooks/playbook_server_VM2.yml
+
+# - name: Copy consumer to VM1
+#   import_playbook: child_playbooks/playbook_copy_consumer_to_vm1.yml
+
+# - name: Copy consumer to VM2
+#   import_playbook: child_playbooks/playbook_copy_consumer_tweetnlp_to_VM2.yml
+
+- name: Start zookeeper
+  import_playbook: child_playbooks/playbook_start_zookeeper.yml
+
+- name: Start brokers
+  import_playbook: child_playbooks/playbook_start_brokers.yml
+  
+# - name: Install CouchDB
+#   import_playbook: child_playbooks/playbook_install_couchdb.yml
+
+# - name: Start CouchDB
+#   import_playbook: child_playbooks/playbook_start_couchdb.yml
+
+# - name: Create topics
+#   import_playbook: child_playbooks/playbook_create_kafka_topic.yml
+
+# - name: Start VM2 consumer
+#   import_playbook: child_playbooks/playbook_start_VM2_consumer.yml
+
+# - name: Start VM3 consumer
+#   import_playbook: child_playbooks/playbook_start_VM3_consumer.yml
+
+# - name: Start producer
+#   import_playbook: child_playbooks/playbook_start_producer.yml
+...
