@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 import { Card } from 'antd';
 import axios from 'axios';
-import { BASE_PARTY_COLORS } from './utils/constants';
+import { BASE_PARTY_COLORS, BACKEND_URL } from './utils/constants';
 import {rgba} from './utils/colors';
 
 
@@ -16,7 +16,7 @@ const RadarChartEmotion = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const response = await axios('http://127.0.0.1:5000/api/overall-emotion');
+        const response = await axios(`${BACKEND_URL}/api/overall-emotion`);
         const initialData = response.data;
         // console.log('Initial data:', initialData);
         updateChartData(initialData);
@@ -112,7 +112,7 @@ const RadarChartEmotion = () => {
 
   // Listen for changes and update the chart
   useEffect(() => {
-    let eventSource = new EventSource('http://127.0.0.1:5000/api/changes');
+    let eventSource = new EventSource(`${BACKEND_URL}/api/changes`);
     eventSource.onmessage = (event) => {
       const newData = JSON.parse(event.data);
     //   console.log('New data:', newData);

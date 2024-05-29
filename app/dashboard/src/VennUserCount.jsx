@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { VennDiagramChart, extractSets } from "chartjs-chart-venn";
 import { Chart, Tooltip, registerables } from "chart.js";
 import { Card } from 'antd';
+import { BACKEND_URL } from './utils/constants';
 
 // Register Chart.js components and Venn diagram
 Chart.register(...registerables, VennDiagramChart);
@@ -17,7 +18,7 @@ const ChartVenn = () => {
     // Function to fetch data from the API
     const fetchData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5000/api/user-count');
+        const response = await fetch(`${BACKEND_URL}/api/user-count`);
         const jsonData = await response.json();
         const formattedData = [
             { sets: ["Democrat"], value: isNaN(jsonData.democrat_count) ? 0 : jsonData.democrat_count },

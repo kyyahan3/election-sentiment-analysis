@@ -7,7 +7,7 @@ import axios from 'axios';
 import { rgba } from './utils/colors';
 import { getChartOptions } from './utils/tsplotConfig';
 import { Card, Select } from 'antd';
-import { BASE_PARTY_COLORS } from './utils/constants';
+import { BASE_PARTY_COLORS, BACKEND_URL } from './utils/constants';
 
 const { Option } = Select;
 
@@ -26,7 +26,7 @@ const TSPlotSentiment = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const url = `http://127.0.0.1:5000/api/sentiment_trend/${aggregation}`;
+            const url = `${BACKEND_URL}/api/sentiment_trend/${aggregation}`;
             try {
               const response = await axios.get(url);
             //   console.log("Data received:", response.data);  // Debugging log

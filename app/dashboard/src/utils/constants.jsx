@@ -8,4 +8,6 @@ export const BASE_PARTY_COLORS = {
 export const PLOT_TITLE_FONT = 15;
 export const PLOT_TITLE_PADDING = { top: 5, bottom: 30 };
 
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
   

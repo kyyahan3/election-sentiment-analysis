@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, Progress } from 'antd';
+import { BACKEND_URL } from './utils/constants';
 
 // HAVEN"T USED THIS YET
 const EmotionScores = () => {
@@ -10,7 +11,7 @@ const EmotionScores = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await axios('/api/comments');
+      const result = await axios(`${BACKEND_URL}/api/comments`);
       setComments(result.data);
     };
 

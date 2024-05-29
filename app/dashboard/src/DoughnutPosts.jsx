@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from 'antd';
 import axios from 'axios'; // Import axios for making HTTP requests
 import { Doughnut } from 'react-chartjs-2';
+import { BACKEND_URL } from './utils/constants';
 
 function DoughnutPosts() {
     const [docCount, setDocCount] = useState(null);
@@ -14,7 +15,7 @@ function DoughnutPosts() {
         // Function to fetch document count from the API
         const fetchDocCount = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:5000/api/count/sentiment_data'); 
+                const response = await axios.get('${BACKEND_URL}/count/sentiment_data'); 
                 // Store the response in state
                 setDemocratCount(response.data['democrat']);
                 setRepublicanCount(response.data['republican']);
