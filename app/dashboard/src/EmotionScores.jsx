@@ -11,7 +11,7 @@ const EmotionScores = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await axios(`${BACKEND_URL}/api/comments`);
+      const result = await axios(`${BACKEND_URL}/comments`);
       setComments(result.data);
     };
 
