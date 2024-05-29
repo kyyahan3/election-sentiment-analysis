@@ -111,54 +111,54 @@ const RadarChartEmotion = () => {
   }, []);
 
   // Listen for changes and update the chart
-  useEffect(() => {
-    let eventSource = new EventSource(`${BACKEND_URL}/api/changes`);
-    eventSource.onmessage = (event) => {
-      const newData = JSON.parse(event.data);
-    //   console.log('New data:', newData);
+  // useEffect(() => {
+  //   let eventSource = new EventSource(`${BACKEND_URL}/api/changes`);
+  //   eventSource.onmessage = (event) => {
+  //     const newData = JSON.parse(event.data);
+  //   //   console.log('New data:', newData);
 
-      // Ensure only updates for democrat and republican parties 
-      if (!['democrat', 'republican'].includes(newData.party)) {
-        return;
-      }
-      const label = newData.party;
-      const probabilities = newData.probability;
+  //     // Ensure only updates for democrat and republican parties 
+  //     if (!['democrat', 'republican'].includes(newData.party)) {
+  //       return;
+  //     }
+  //     const label = newData.party;
+  //     const probabilities = newData.probability;
 
-      // Find the index of the updated label in the categories
-      const datasetIndex = label === 'democrat' ? 0 : 1;
+  //     // Find the index of the updated label in the categories
+  //     const datasetIndex = label === 'democrat' ? 0 : 1;
 
-      // Update the corresponding dataset
-      if (chart.current) {
-        // Clone the datasets to ensure immutability
-        const newDatasets = chart.current.data.datasets.map(dataset => ({
-          ...dataset,
-          data: [...dataset.data]
-        }));
+  //     // Update the corresponding dataset
+  //     if (chart.current) {
+  //       // Clone the datasets to ensure immutability
+  //       const newDatasets = chart.current.data.datasets.map(dataset => ({
+  //         ...dataset,
+  //         data: [...dataset.data]
+  //       }));
         
-        // Update the cloned data
-        const categories = ['joy', 'optimism', 'anger', 'sadness'];
-        categories.forEach((category, index) => {
-          newDatasets[datasetIndex].data[index] += probabilities[category];
-        });
+  //       // Update the cloned data
+  //       const categories = ['joy', 'optimism', 'anger', 'sadness'];
+  //       categories.forEach((category, index) => {
+  //         newDatasets[datasetIndex].data[index] += probabilities[category];
+  //       });
   
-        // Set the cloned data to the chart and update
-        chart.current.data.datasets = newDatasets;
-        chart.current.update();
-      }
-    };
+  //       // Set the cloned data to the chart and update
+  //       chart.current.data.datasets = newDatasets;
+  //       chart.current.update();
+  //     }
+  //   };
 
-    eventSource.onerror = (error) => {
-      console.error("EventSource failed:", error);
-      eventSource.close();
-    };
+  //   eventSource.onerror = (error) => {
+  //     console.error("EventSource failed:", error);
+  //     eventSource.close();
+  //   };
 
-    // Cleanup
-    return () => {
-      // if chart exists, destroy it
-      if (chart.current) { chart.current.destroy(); } 
-      eventSource.close();
-    };
-  }, []); // Only re-run if chart object changes
+  //   // Cleanup
+  //   return () => {
+  //     // if chart exists, destroy it
+  //     if (chart.current) { chart.current.destroy(); } 
+  //     eventSource.close();
+  //   };
+  // }, []); // Only re-run if chart object changes
 
   return (
     <Card title="Real-time Overall Emotion Scores">

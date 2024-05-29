@@ -93,62 +93,62 @@ const RealTimeBarEmotion = () => {
   }, []); 
 
   // Listen for changes and update the chart
-  useEffect(() => {
-    const eventSource = new EventSource(`${BACKEND_URL}/api/changes`);
-    eventSource.onmessage = (event) => {
-      const newData = JSON.parse(event.data);
-      const { party, probability } = newData;
+//   useEffect(() => {
+//     const eventSource = new EventSource(`${BACKEND_URL}/api/changes`);
+//     eventSource.onmessage = (event) => {
+//       const newData = JSON.parse(event.data);
+//       const { party, probability } = newData;
 
-      if (chart.current) {
-        // Clone the datasets to ensure immutability
-        const newDatasets = chart.current.data.datasets.map(dataset => ({
-          ...dataset,
-          data: [...dataset.data]
-        }));
-        // console.log('Old data:', chart.current.data.datasets);
+//       if (chart.current) {
+//         // Clone the datasets to ensure immutability
+//         const newDatasets = chart.current.data.datasets.map(dataset => ({
+//           ...dataset,
+//           data: [...dataset.data]
+//         }));
+//         // console.log('Old data:', chart.current.data.datasets);
 
-        const updatedCounts = { ...counts };  // Initialize updatedCounts 
-        const datasetIndex = chart.current.data.datasets.findIndex(dataset => dataset.label.toLowerCase() === party);
+//         const updatedCounts = { ...counts };  // Initialize updatedCounts 
+//         const datasetIndex = chart.current.data.datasets.findIndex(dataset => dataset.label.toLowerCase() === party);
         
-        if (datasetIndex !== -1) {  
-          const categories = ['joy', 'optimism', 'anger', 'sadness'];
-          // Update each category within the dataset using the new probability
-          categories.forEach((category, index) => {
-            const currentCount = counts[party];
-            const currentTotal = newDatasets[datasetIndex].data[index] * currentCount;
-            const newTotal = currentTotal + probability[category];
-            const newCount = currentCount + 1;
+//         if (datasetIndex !== -1) {  
+//           const categories = ['joy', 'optimism', 'anger', 'sadness'];
+//           // Update each category within the dataset using the new probability
+//           categories.forEach((category, index) => {
+//             const currentCount = counts[party];
+//             const currentTotal = newDatasets[datasetIndex].data[index] * currentCount;
+//             const newTotal = currentTotal + probability[category];
+//             const newCount = currentCount + 1;
 
-            // Calculate the new average
-            newDatasets[datasetIndex].data[index] = newTotal / newCount;
-            // Store the new count in updatedCounts object
-            updatedCounts[party] = newCount;
-          });
+//             // Calculate the new average
+//             newDatasets[datasetIndex].data[index] = newTotal / newCount;
+//             // Store the new count in updatedCounts object
+//             updatedCounts[party] = newCount;
+//           });
 
-          // Set the cloned data to the chart and update
-          chart.current.data.datasets = newDatasets;
-          chart.current.update();
-          // console.log('Updated data:', chart.current.data.datasets);
+//           // Set the cloned data to the chart and update
+//           chart.current.data.datasets = newDatasets;
+//           chart.current.update();
+//           // console.log('Updated data:', chart.current.data.datasets);
 
-          // Update the counts
-          setCounts(updatedCounts);
-        }
-      }
-    };
+//           // Update the counts
+//           setCounts(updatedCounts);
+//         }
+//       }
+//     };
 
-    eventSource.onerror = (error) => {
-      console.error("EventSource failed:", error);
-      eventSource.close();
-    };
+//     eventSource.onerror = (error) => {
+//       console.error("EventSource failed:", error);
+//       eventSource.close();
+//     };
 
-    // Cleanup
-    return () => {
-      if (chart.current) {
-        chart.current.destroy();
-      }
-      eventSource.close();
-    };
-}, []);  
+//     // Cleanup
+//     return () => {
+//       if (chart.current) {
+//         chart.current.destroy();
+//       }
+//       eventSource.close();
+//     };
+// }, []);  
 
 
   return (
