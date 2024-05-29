@@ -15,7 +15,7 @@ function DoughnutPosts() {
         // Function to fetch document count from the API
         const fetchDocCount = async () => {
             try {
-                const response = await axios.get('${BACKEND_URL}/api/count/sentiment_data'); 
+                const response = await axios.get(`${BACKEND_URL}/api/count/sentiment_data`); 
                 // Store the response in state
                 setDemocratCount(response.data['democrat']);
                 setRepublicanCount(response.data['republican']);
