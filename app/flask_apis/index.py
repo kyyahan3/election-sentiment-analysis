@@ -124,7 +124,6 @@ def get_trend(aggregate):
 
     data = response.json()
     processed_data = process_data(data['rows'])
-    # print(processed_data)
 
     def parse_time(time_str):
         return datetime.strptime(time_str, "%Y-%m-%d %H:%M")
@@ -136,51 +135,59 @@ def get_trend(aggregate):
 
             if len(party_data) <= 0:
                 continue
+
             # Find min and max dates in the party_data
             min_date = min(parse_time(item['time']) for item in party_data)
             max_date = max(parse_time(item['time']) for item in party_data)
 
-            # crate a list of time slots with 30 minutes interval
+            # Create a list of time slots with 30 minutes interval
             time_slots = [min_date + timedelta(minutes=30 * i) for i in range(0, int((max_date - min_date).total_seconds() / 60 / 30) + 1)]
 
             # Fill in the missing time slots with 0 in party_data
-            for time_slot in time_slots:
-                if not any(parse_time(item['time']) == time_slot for item in party_data):
-                    party_data.append({'time': time_slot.strftime("%Y-%m-%d %H:%M"), 'value': 0})
+            time_slot_set = {parse_time(item['time']): item for item in party_data}
+            filled_party_data = [{'time': time_slot.strftime("%Y-%m-%d %H:%M"), 'value': time_slot_set.get(time_slot, {'value': 0})['value']} for time_slot in time_slots]
 
+            for i in range(0, len(filled_party_data), frames_per_aggregation):
+                frame_slice = filled_party_data[i:i + frames_per_aggregation]
+                valid_values = [item['value'] for item in frame_slice if item['value'] is not None]
 
-            for i in range(0, len(party_data), frames_per_aggregation):
-                frame_slice = party_data[i:i+frames_per_aggregation]
-                if frame_slice:
-                    avg_value = sum(item['value'] for item in frame_slice) / len(frame_slice)
-                    aggregated_data[party].append({
-                        'time': frame_slice[0]['time'],
-                        'value': avg_value
-                    })
+                if valid_values:
+                    avg_value = sum(valid_values) / len(valid_values)
+                else:
+                    avg_value = None
+
+                aggregated_data[party].append({
+                    'time': frame_slice[0]['time'],
+                    'value': avg_value
+                })
+
+            # Sort the aggregated data by time
+            aggregated_data[party].sort(key=lambda x: parse_time(x['time']))
+        print(aggregated_data)
         return aggregated_data
 
-    if aggregate == '1h':
-        processed_data = aggregate_data(processed_data, 2)
-    elif aggregate == '6h':
-        processed_data = aggregate_data(processed_data, 12)
-    elif aggregate == '12h':
-        processed_data = aggregate_data(processed_data, 24)
-    elif aggregate == '1d':
-        processed_data = aggregate_data(processed_data, 48)
-    
+    # Map the aggregation interval to the number of frames per aggregation
+    aggregation_mapping = {
+        '30m': 1,
+        '1h': 2,
+        '6h': 12,
+        '12h': 24,
+        '1d': 48
+    }
+
+    processed_data = aggregate_data(processed_data, aggregation_mapping.get(aggregate, 1))
+
     return jsonify(processed_data)
-    
+
 def process_data(rows):
-    # Structure to hold the processed data
-    trends = { 'democrat': [], 'republican': [], 'green': [], 'libertarian': [] }
+    trends = {'democrat': [], 'republican': [], 'green': [], 'libertarian': []}
 
     for item in rows:
         key = item['key']
         value = item['value']
-        timestamp = f"{key[0]}-{key[1]:02}-{key[2]:02} {key[3]:02}:{key[4]:02}"  # Adjust index if necessary
+        timestamp = f"{key[0]}-{key[1]:02}-{key[2]:02} {key[3]:02}:{key[4]:02}"
 
         for party in value:
-            # Compute the overall positive score by adding the positive score and half of the neutral score
             overall_positive_score = value[party]['positive']['sum'] / value[party]['positive']['count'] if value[party]['positive']['count'] > 0 else 0
             overall_positive_score += (value[party]['neutral']['sum'] / value[party]['neutral']['count'] / 2) if value[party]['neutral']['count'] > 0 else 0
             
